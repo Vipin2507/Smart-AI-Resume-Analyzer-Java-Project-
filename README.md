@@ -1,92 +1,255 @@
-# Smart AI Resume Analyzer
+# 🚀 Smart AI Resume Analyzer
 
-Production-ready full-stack application for analyzing resumes against job descriptions. Built with Spring Boot (Java 17) and React (Vite), designed for deployment on [Render](https://render.com).
+An AI-powered full-stack web application that analyzes resumes against job descriptions to calculate match percentage, detect missing skills, and generate intelligent improvement suggestions.
 
----
-
-## Tech Stack
-
-| Layer    | Technology |
-|----------|------------|
-| Backend  | Java 17, Spring Boot 3, Spring Security (JWT), JPA/Hibernate, PostgreSQL, Maven, Apache Tika, Lombok |
-| Frontend | React 18, Vite, TypeScript, Tailwind CSS, Framer Motion, Chart.js, Axios |
-| Database | PostgreSQL (production), H2 (tests) |
-| Deploy   | Render (Web Service + Static Site + PostgreSQL) |
+Built with Spring Boot (Java 17) and React (Vite + Tailwind CSS), the system simulates ATS-style resume screening using keyword extraction, cosine similarity, and rule-based scoring.
 
 ---
 
-## Architecture (ASCII)
+## 🌍 Live Demo
+
+🔗 **Backend:** https://your-backend.onrender.com  
+🔗 **Frontend:** https://your-frontend.onrender.com
+
+*(Replace with your Render URLs after deployment.)*
+
+---
+
+## 📌 Project Overview
+
+Smart AI Resume Analyzer allows users to:
+
+- 🔐 **Register & Login** (JWT Authentication)
+- 📄 **Upload Resume** (PDF / DOCX)
+- 📝 **Paste Job Description**
+- 📊 **Get Match Percentage**
+- 🧠 **View Missing & Matched Skills**
+- 💡 **Receive Improvement Suggestions**
+- 📈 **Track Analysis History**
+
+It mimics how Applicant Tracking Systems (ATS) evaluate resumes.
+
+---
+
+## 🏗️ Tech Stack
+
+### Backend
+
+- Java 17
+- Spring Boot 3
+- Spring Security (JWT)
+- JPA / Hibernate
+- PostgreSQL
+- Apache Tika (Resume Parsing)
+- Maven
+
+### Frontend
+
+- React (Vite)
+- Tailwind CSS
+- Axios
+- Chart.js
+- Framer Motion
+
+### Deployment
+
+- Render (Web Service + Static Site)
+- PostgreSQL (Render Managed DB)
+
+---
+
+## 🧠 How the Analysis Works
+
+### 1️⃣ Resume Parsing
+
+- Extracts text from PDF/DOCX using **Apache Tika**
+- Cleans text (lowercase, remove symbols, stopwords)
+
+### 2️⃣ Skill Extraction
+
+- Predefined skill dataset (Java, Spring, Docker, AWS, React, etc.)
+- Extracts skills from:
+  - Resume
+  - Job Description
+
+### 3️⃣ Match Calculation
+
+**Skill Match** = (Matched Skills / Total JD Skills) × 100
+
+### 4️⃣ Cosine Similarity
+
+- Converts texts into word frequency vectors
+- Calculates similarity score
+- Blends with skill match score
+
+**Final Match** = (0.6 × Skill Match) + (0.4 × Cosine Similarity)
+
+### 5️⃣ Resume Score (Out of 10)
+
+| Factor            | Weight |
+|-------------------|--------|
+| Skill Match       | 40%    |
+| Experience Keywords | 20%  |
+| Projects Section  | 15%    |
+| Education Section | 15%    |
+| Certifications    | 10%    |
+
+---
+
+## 📁 Project Structure
 
 ```
-┌─────────────────────────────────────────────────────────────────────────┐
-│                           RENDER (Production)                             │
-├─────────────────────────────────────────────────────────────────────────┤
-│  Static Site (Frontend)          Web Service (Backend)     PostgreSQL    │
-│  ┌──────────────────┐           ┌──────────────────┐     ┌──────────┐  │
-│  │  React (Vite)     │  HTTPS    │  Spring Boot     │     │  DB      │  │
-│  │  dist/            │ ────────► │  JAR :8080       │────►│  users   │  │
-│  │  VITE_API_BASE_URL│           │  JWT + CORS       │     │  analysis│  │
-│  └──────────────────┘           └──────────────────┘     └──────────┘  │
-└─────────────────────────────────────────────────────────────────────────┘
-
-Local:
-  Frontend (npm run dev) ─ proxy /api ─► Backend (mvn spring-boot:run) ─► PostgreSQL or H2
+resume-analyzer/
+│
+├── backend/
+│   ├── controller/
+│   ├── service/
+│   ├── repository/
+│   ├── model/
+│   ├── dto/
+│   ├── security/
+│   ├── config/
+│   ├── util/
+│   └── exception/
+│
+├── frontend/
+│   ├── components/
+│   ├── pages/
+│   ├── api/
+│   ├── context/
+│   └── assets/
+│
+├── database/
+│   └── schema-postgres.sql
+│
+└── README.md
 ```
 
 ---
 
-## Local Setup
+## 🔐 Authentication
 
-### Prerequisites
+- JWT-based authentication
+- BCrypt password hashing
+- Stateless session management
+- Role-based authorization
 
-- **Java 17+**
-- **Node.js 18+** and npm
-- **PostgreSQL 14+** (or use default H2 for quick run)
+---
 
-### 1. Database (optional for local)
+## 📡 API Endpoints
 
-If using PostgreSQL locally:
+### 🔑 Authentication
+
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| POST | `/api/auth/register` | Register new user |
+| POST | `/api/auth/login` | Login → returns JWT |
+
+### 📊 Resume Analysis
+
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| POST | `/api/analyze` | Analyze resume vs job description |
+| GET | `/api/analyze/history` | List user's analyses |
+| GET | `/api/analyze/{id}` | Get analysis by ID |
+| DELETE | `/api/analyze/{id}` | Delete analysis |
+| GET | `/api/analyze/{id}/report` | Download PDF report |
+
+### 👤 Profile
+
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| GET | `/api/profile` | Current user profile (Bearer token) |
+
+#### POST /api/analyze
+
+**Request:** `multipart/form-data`
+
+- `resume` — PDF or DOCX file
+- `jobDescription` — Job description text
+
+**Response:**
+
+```json
+{
+  "matchPercentage": 82,
+  "resumeScore": 8.7,
+  "matchedSkills": ["Java", "Spring Boot"],
+  "missingSkills": ["Docker", "AWS"],
+  "suggestions": ["Add measurable achievements", "Include cloud experience"]
+}
+```
+
+**API Docs (when backend is running):** Swagger UI at `/swagger-ui.html`, OpenAPI at `/v3/api-docs`.
+
+---
+
+## 🗄️ Database Schema
+
+### Users Table
+
+| Field       | Type      |
+|------------|-----------|
+| id         | Long (PK) |
+| name       | String    |
+| email      | String (unique) |
+| password   | String (hashed) |
+| role       | String    |
+| created_at | Timestamp |
+
+### Analysis Table
+
+| Field             | Type    |
+|-------------------|---------|
+| id                | Long (PK) |
+| user_id           | Long (FK) |
+| job_description   | TEXT    |
+| resume_text       | TEXT    |
+| match_percentage  | Double  |
+| resume_score      | Double  |
+| created_at        | Timestamp |
+
+---
+
+## ⚙️ Local Setup Guide
+
+### 1️⃣ Clone Repository
 
 ```bash
-createdb resume_analyzer_db
-# Or run: psql -f database/schema-postgres.sql
+git clone https://github.com/your-username/resume-analyzer.git
+cd resume-analyzer
 ```
 
-Set environment variables (or use defaults in `application.properties`):
+### 2️⃣ Backend Setup
 
-```bash
-export DB_URL=jdbc:postgresql://localhost:5432/resume_analyzer_db
-export DB_USERNAME=postgres
-export DB_PASSWORD=your_password
-```
-
-### 2. Backend
-
-**Option A – with PostgreSQL:**
+**Option A — with PostgreSQL**
 
 ```bash
 cd backend
-mvn clean package
+mvn clean install
 mvn spring-boot:run
 ```
 
-**Option B – without PostgreSQL (H2 in-memory):**
+Create database and set environment variables:
+
+```bash
+# PostgreSQL
+export DB_URL=jdbc:postgresql://localhost:5432/resume_analyzer_db
+export DB_USERNAME=postgres
+export DB_PASSWORD=your_password
+export JWT_SECRET=your_base64_secret   # Generate: openssl rand -base64 32
+```
+
+**Option B — without PostgreSQL (H2 in-memory)**
 
 ```bash
 cd backend
 mvn spring-boot:run -Dspring.profiles.active=dev
 ```
 
-Backend runs at **http://localhost:8080**.  
-For production profile:
+Backend runs at **http://localhost:8080**.
 
-```bash
-export SPRING_PROFILES_ACTIVE=prod
-export JWT_SECRET=your-base64-secret-at-least-32-bytes
-mvn spring-boot:run
-```
-
-### 3. Frontend
+### 3️⃣ Frontend Setup
 
 ```bash
 cd frontend
@@ -94,217 +257,111 @@ npm install
 npm run dev
 ```
 
-Frontend runs at **http://localhost:5173** and proxies `/api` to the backend.
-
-### 4. Optional: JWT secret for local
-
-Generate a Base64 secret (min 32 bytes):
+For local dev, the app proxies `/api` to the backend. To point directly to backend:
 
 ```bash
-echo -n "your-secret-key-min-32-characters-long" | base64
-export JWT_SECRET=<output>
+# .env.local or .env
+VITE_API_BASE_URL=http://localhost:8080
 ```
 
----
-
-## Environment Variables
-
-### Backend (Spring Boot)
-
-| Variable            | Required (Prod) | Description |
-|---------------------|-----------------|-------------|
-| `DB_URL`            | Yes             | PostgreSQL JDBC URL (e.g. `jdbc:postgresql://host:5432/dbname`) |
-| `DB_USERNAME`       | Yes             | Database user |
-| `DB_PASSWORD`       | Yes             | Database password |
-| `JWT_SECRET`        | Yes             | Base64-encoded secret (min 256 bits). Generate: `openssl rand -base64 32` |
-| `JWT_EXPIRATION_MS` | No              | Token validity in ms (default: 86400000 = 24h) |
-| `FRONTEND_URL`      | Yes (prod)      | Frontend origin for CORS (e.g. `https://your-app.onrender.com`) |
-| `PORT`              | No              | Server port (default: 8080; Render sets this) |
-| `SPRING_PROFILES_ACTIVE` | No         | Set to `prod` on Render for production logging |
-
-### Frontend (Vite)
-
-| Variable              | Required (Prod) | Description |
-|-----------------------|----------------|-------------|
-| `VITE_API_BASE_URL`   | Yes (prod)     | Backend base URL (e.g. `https://your-backend.onrender.com`) |
+Frontend runs at **http://localhost:5173**.
 
 ---
 
-## Deployment on Render
+## 🚀 Deployment on Render
 
-### 1. Create PostgreSQL Database
+### Backend Deployment
 
-1. In Render Dashboard: **New** → **PostgreSQL**.
-2. Name: `resume-analyzer-db` (or similar).
-3. Region: same as your backend.
-4. After creation, note:
-   - **Internal Database URL** (use this for `DB_URL` in the backend)
-   - **Username** → `DB_USERNAME`
-   - **Password** → `DB_PASSWORD`
+1. Create **Web Service**
+2. Connect GitHub repository (set **Root Directory** to `backend` if needed)
+3. **Build Command:** `mvn clean package -DskipTests`
+4. **Start Command:** `java -jar target/smart-resume-analyzer-1.0.0.jar`
+5. Add **Environment Variables:**
 
-Schema is created automatically by Spring Boot (`ddl-auto=update`). Optionally run `database/schema-postgres.sql` manually.
+| Key | Value |
+|-----|--------|
+| DB_URL | *(Render PostgreSQL Internal URL)* |
+| DB_USERNAME | *(from PostgreSQL)* |
+| DB_PASSWORD | *(from PostgreSQL)* |
+| JWT_SECRET | *(generate: `openssl rand -base64 32`)* |
+| FRONTEND_URL | `https://your-frontend.onrender.com` |
+| SPRING_PROFILES_ACTIVE | `prod` |
 
-### 2. Backend (Web Service)
+### Frontend Deployment
 
-1. **New** → **Web Service**.
-2. Connect your repo (e.g. GitHub).
-3. **Root Directory**: `backend` (or leave blank if repo root is backend).
-4. **Runtime**: Java.
-5. **Build Command**: `mvn clean package -DskipTests`
-6. **Start Command**: `java -jar target/smart-resume-analyzer-1.0.0.jar`
-7. **Instance Type**: Free or paid.
+1. Create **Static Site**
+2. **Root Directory:** `frontend`
+3. **Build Command:** `npm install && npm run build`
+4. **Publish Directory:** `dist`
+5. **Environment Variable:** `VITE_API_BASE_URL` = `https://your-backend.onrender.com` (no trailing slash)
 
-**Environment Variables** (add in Render dashboard):
+### Database
 
-| Key                 | Value |
-|---------------------|--------|
-| `DB_URL`            | *(Internal Database URL from step 1)* |
-| `DB_USERNAME`       | *(from PostgreSQL)* |
-| `DB_PASSWORD`       | *(from PostgreSQL)* |
-| `JWT_SECRET`        | *(generate: `openssl rand -base64 32`)* |
-| `FRONTEND_URL`      | `https://your-frontend.onrender.com` (set after creating frontend) |
-| `SPRING_PROFILES_ACTIVE` | `prod` |
-
-8. Deploy. Note the backend URL (e.g. `https://smart-resume-analyzer-api.onrender.com`).
-
-### 3. Frontend (Static Site)
-
-1. **New** → **Static Site**.
-2. Connect same repo.
-3. **Root Directory**: `frontend`.
-4. **Build Command**: `npm install && npm run build`
-5. **Publish Directory**: `dist`
-6. **Environment Variable**:
-   - `VITE_API_BASE_URL` = `https://your-backend.onrender.com` (no trailing slash)
-
-7. Deploy. Note the frontend URL.
-
-### 4. Update CORS
-
-In the **Backend** service on Render, set:
-
-- `FRONTEND_URL` = `https://your-actual-frontend.onrender.com`
-
-Redeploy backend if you had used a placeholder.
+Create a **PostgreSQL** instance on Render and use its **Internal Database URL** as `DB_URL` for the backend.
 
 ---
 
-## API Documentation
+## 🛡️ Security Features
 
-When the backend is running:
-
-- **Swagger UI**: `http://localhost:8080/swagger-ui.html`
-- **OpenAPI JSON**: `http://localhost:8080/v3/api-docs`
-
-### Main Endpoints
-
-| Method | Path | Description |
-|--------|------|-------------|
-| POST   | `/api/auth/register` | Register (name, email, password) |
-| POST   | `/api/auth/login`    | Login (email, password) → JWT |
-| GET    | `/api/profile`      | Current user (Bearer token) |
-| POST   | `/api/analyze`       | Analyze resume (multipart: `jobDescription`, `resume`) |
-| GET    | `/api/analyze/history` | List analyses (Bearer token) |
-| GET    | `/api/analyze/{id}`  | Get analysis by ID |
-| DELETE | `/api/analyze/{id}`  | Delete analysis |
-| GET    | `/api/analyze/{id}/report` | Download PDF report |
-
-### Error Response Format
-
-```json
-{
-  "timestamp": "2024-01-15T10:00:00",
-  "status": 400,
-  "error": "Bad Request",
-  "message": "Human-readable message",
-  "details": { "field": "validation message" }
-}
-```
+- Password hashing with BCrypt
+- JWT token validation filter
+- Input validation (Bean Validation)
+- Global exception handling (no stack traces in production)
+- Secure file upload limits (10MB)
+- No hardcoded credentials — all config via environment variables
+- CORS configured via `FRONTEND_URL`
 
 ---
 
-## Testing
+## 🧪 Testing
 
-### Backend
+- **Unit tests** for `ResumeAnalyzerService`
+- **Authentication flow** testing (`AuthFlowIntegrationTest`)
+- **API endpoint** validation (`AnalysisControllerIntegrationTest`)
 
 ```bash
 cd backend
 mvn test
 ```
 
-- Unit tests: `ResumeAnalyzerServiceTest`, `CosineSimilarityTest`
-- Integration test: `AnalysisControllerIntegrationTest` (register, login, analyze with JWT)
+---
 
-### Frontend
+## 📈 Future Enhancements
 
-```bash
-cd frontend
-npm run build
-```
+- OpenAI integration for AI suggestions
+- Resume grammar analysis
+- ATS compatibility score
+- Multi-language resume support
+- Microservice architecture
+- Docker & CI/CD pipeline
 
 ---
 
-## Project Structure
+## 💼 Why This Project Matters
 
-```
-Resume Checker/
-├── backend/                    # Spring Boot
-│   ├── src/main/java/com/resumeanalyzer/
-│   │   ├── controller/
-│   │   ├── service/
-│   │   ├── repository/
-│   │   ├── model/
-│   │   ├── dto/
-│   │   ├── security/
-│   │   ├── config/             # Security, CORS, OpenAPI
-│   │   ├── exception/          # GlobalExceptionHandler
-│   │   └── util/
-│   ├── src/main/resources/
-│   │   ├── application.properties
-│   │   └── application-prod.properties
-│   ├── Dockerfile
-│   └── pom.xml
-├── frontend/                   # React + Vite
-│   ├── src/
-│   │   ├── api/                # Axios client (VITE_API_BASE_URL)
-│   │   ├── components/
-│   │   ├── pages/
-│   │   └── context/
-│   ├── .env.production
-│   └── package.json
-├── database/
-│   ├── schema-postgres.sql     # Optional PostgreSQL schema
-│   └── schema.sql              # Legacy MySQL (reference)
-└── README.md
-```
+This project demonstrates:
+
+- Backend development with Spring Boot
+- Secure authentication (JWT)
+- Database integration (JPA + PostgreSQL)
+- File parsing (PDF/DOCX with Apache Tika)
+- NLP-based similarity algorithms (cosine similarity)
+- Full-stack integration (React + REST API)
+- Production deployment experience (Render)
 
 ---
 
-## Production Checklist
+## 👨‍💻 Author
 
-- [ ] `JWT_SECRET` set to a strong Base64 value (min 32 bytes)
-- [ ] `SPRING_PROFILES_ACTIVE=prod` on backend
-- [ ] `FRONTEND_URL` matches your Render static site URL
-- [ ] `VITE_API_BASE_URL` points to your Render backend URL
-- [ ] No secrets in repo; all config via environment variables
-- [ ] File upload limit 10MB (configurable in `application.properties`)
+**Vipin Tomar**  
+B.Tech CSE (AI & Data Science)  
+Backend & AI Enthusiast
 
 ---
 
-## Screenshots
+## ⭐ If You Like This Project
 
-<!-- Add screenshots of Login, Dashboard, Analyze result, History -->
-
-| Login | Dashboard | Analysis Result |
-|-------|-----------|-----------------|
-| *(screenshot)* | *(screenshot)* | *(screenshot)* |
-
----
-
-## Live Demo
-
-- **Frontend**: [https://your-app.onrender.com](https://your-app.onrender.com)
-- **API**: [https://your-backend.onrender.com](https://your-backend.onrender.com)
+Star the repository and connect on LinkedIn 🚀
 
 ---
 
