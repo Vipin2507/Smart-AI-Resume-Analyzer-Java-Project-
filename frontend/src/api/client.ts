@@ -1,10 +1,16 @@
 import axios from 'axios'
 
-const API_BASE = '/api'
+/**
+ * API base URL: production uses VITE_API_BASE_URL; dev uses relative /api (Vite proxy).
+ */
+const API_BASE = import.meta.env.VITE_API_BASE_URL
+  ? `${import.meta.env.VITE_API_BASE_URL.replace(/\/$/, '')}/api`
+  : '/api'
 
 export const api = axios.create({
   baseURL: API_BASE,
   headers: { 'Content-Type': 'application/json' },
+  timeout: 60000,
 })
 
 api.interceptors.request.use((config) => {

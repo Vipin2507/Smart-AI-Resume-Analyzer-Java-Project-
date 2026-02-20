@@ -1,6 +1,7 @@
 package com.resumeanalyzer.exception;
 
 import jakarta.validation.ConstraintViolationException;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.BadCredentialsException;
@@ -17,9 +18,13 @@ import java.util.stream.Collectors;
 
 /**
  * Global exception handler - returns consistent error responses.
+ * In production, generic exceptions do not expose stack traces or internal messages.
  */
 @RestControllerAdvice
 public class GlobalExceptionHandler {
+
+    @Value("${spring.profiles.active:default}")
+    private String activeProfile;
 
     @ExceptionHandler(ResourceNotFoundException.class)
     public ResponseEntity<ErrorResponse> handleResourceNotFound(ResourceNotFoundException ex) {
@@ -117,12 +122,14 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(Exception.class)
     public ResponseEntity<ErrorResponse> handleGeneric(Exception ex) {
+        boolean isProd = "prod".equalsIgnoreCase(activeProfile);
+        String message = isProd ? "An unexpected error occurred" : (ex.getMessage() != null ? ex.getMessage() : "An unexpected error occurred");
         return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(
                 ErrorResponse.builder()
                         .timestamp(LocalDateTime.now())
                         .status(HttpStatus.INTERNAL_SERVER_ERROR.value())
                         .error("Internal Server Error")
-                        .message(ex.getMessage() != null ? ex.getMessage() : "An unexpected error occurred")
+                        .message(message)
                         .build()
         );
     }
