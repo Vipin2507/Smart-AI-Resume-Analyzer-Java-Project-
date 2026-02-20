@@ -1,0 +1,71 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --surface: #0F172A;
+  --surface-elevated: #1E293B;
+  --glass-bg: rgba(30, 41, 59, 0.6);
+  --glass-border: rgba(255, 255, 255, 0.08);
+  --accent-purple: #A78BFA;
+  --accent-cyan: #22D3EE;
+}
+
+/* Dark-first: default to dark */
+html {
+  @apply antialiased;
+}
+
+html:not(.light) {
+  color-scheme: dark;
+}
+
+body {
+  @apply font-sans bg-surface text-slate-100 antialiased;
+  background-color: var(--surface);
+}
+
+/* Glass utility */
+.glass {
+  @apply backdrop-blur-[12px] border border-white/[0.08];
+  background: var(--glass-bg);
+  box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.25);
+}
+
+/* Circular progress for match % */
+.circular-progress {
+  transform: rotate(-90deg);
+}
+
+.circular-progress circle {
+  transition: stroke-dashoffset 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+/* Shimmer for skeleton */
+@keyframes shimmer {
+  0% { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
+}
+
+.animate-shimmer {
+  animation: shimmer 1.5s infinite linear;
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    rgba(255, 255, 255, 0.08) 50%,
+    transparent 100%
+  );
+  background-size: 200% 100%;
+}
+
+/* Focus visible ring */
+*:focus-visible {
+  @apply outline-none ring-2 ring-violet-500 ring-offset-2 ring-offset-surface;
+}
+
+/* Smooth scroll */
+@media (prefers-reduced-motion: no-preference) {
+  html {
+    scroll-behavior: smooth;
+  }
+}

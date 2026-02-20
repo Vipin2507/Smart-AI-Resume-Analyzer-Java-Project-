@@ -1,0 +1,3 @@
+com\resumeanalyzer\service\ResumeAnalyzerServiceTest.class
+com\resumeanalyzer\util\CosineSimilarityTest.class
+com\resumeanalyzer\controller\AnalysisControllerIntegrationTest.class
